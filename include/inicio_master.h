@@ -31,7 +31,7 @@ void print_mensaje(Mensaje *mensaje);
 void doEncodeA(void);
 void doEncodeB(void);
 void draw(void);
-void actualizaLCD(void);
+bool actualizaLCD(void);
 
 
 
@@ -165,6 +165,7 @@ String  MSG_menu[10]={ "TAD01 ",
                 "RAND  ",
                 "FFFF"};
 char strBuf[30];
+
 
 
 
@@ -395,31 +396,26 @@ void doEncodeB(void)
 
 void draw(void) {
   int i=0;
+
   // graphic commands to redraw the complete screen should be placed here  
   u8g.setFont(u8g_font_unifont);
-  //u8g.setFont(u8g_font_osb21);
- /* i=1;
-  AUX_menu= MSG_menu[i]+ Campo2MSG(campo1[i])+"% "+ Campo2MSG(campo2[i])+"%";
-  u8g.drawStr(0,20 , MSG_menu[1].c_str());
-  //u8g.drawStr(0, 20, "ABC");
-  
-  */
+
   i=(indice_menu-1)%NOpciones;
   
   if(i==-1) i=NOpciones-1;
 
-  sprintf(strBuf,"%s  %02d%% %02d%%",MSG_menu[i].c_str(),campo1[i],campo2[i]);
+  sprintf(strBuf,"%s %02d%%  %02d%%",MSG_menu[i].c_str(),campo1[i],campo2[i]);
   u8g.drawStr( 2,cont_menu + offset_menu            , strBuf);
   
   i=(indice_menu)%NOpciones;
   if(i==-1) i=NOpciones-1;
-  sprintf(strBuf,"%s  %02d%% %02d%%",MSG_menu[i].c_str(),campo1[i],campo2[i]);
+  sprintf(strBuf,"%s %02d%%  %02d%%",MSG_menu[i].c_str(),campo1[i],campo2[i]);
   //strBuf="hola";
   u8g.drawStr( 2,cont_menu + offset_menu + delta_menu    , strBuf);
   
   i=(indice_menu+1)%NOpciones;
   if(i==-1) i=NOpciones-1;
-  sprintf(strBuf,"%s  %02d%% %02d%%",MSG_menu[i].c_str(),campo1[i],campo2[i]);
+  sprintf(strBuf,"%s %02d%%  %02d%%",MSG_menu[i].c_str(),campo1[i],campo2[i]);
   u8g.drawStr( 2,cont_menu + offset_menu + 2*delta_menu  , strBuf);
 
   
@@ -434,39 +430,52 @@ void draw(void) {
 }
 
 
-void actualizaLCD(void){
+bool actualizaLCD(void){
+  static int ISRCounter_anterior  = false;
+  bool       enviar_mensaje       = false;
 
-    u8g.firstPage();  
+  if ( ISRCounter_anterior != ISRCounter ){
+
+    ISRCounter_anterior=ISRCounter;
+    enviar_mensaje=true;
+
+    if (foco==0) indice_menu = (ISRCounter/4)%(NOpciones);
+
+    if (foco==1) {
+      if (ISRCounter>=99)  ISRCounter=99;
+      if (ISRCounter<=0)    ISRCounter=0;
+      campo1[indice_menu] = ISRCounter;
+    }
+
+    if (foco==2) {
+      if (ISRCounter>=99)  ISRCounter=99;
+      if (ISRCounter<=0)    ISRCounter=0;
+      campo2[indice_menu] = ISRCounter;
+    }
+  }
+      
+  //Serial.println(indice_menu);   
+  bool B = digitalRead(boton);
+
+
+  if ( !B ){
+    //Serial.println("Boton pulsado: Contador a 0");
+    enviar_mensaje=true;
+
+    foco=(foco+1)%3;
+    if (foco==0) ISRCounter = indice_menu*4;
+    if (foco==1) ISRCounter = campo1[indice_menu];
+    if (foco==2) ISRCounter = campo2[indice_menu];
+    delay(200);
+  }
+
+  u8g.firstPage();  
 
   do {
     draw();
   } while( u8g.nextPage() );
-      
-      if (foco==0) indice_menu = (ISRCounter/4)%(NOpciones);
-      if (foco==1) {
-        if (ISRCounter>=100) ISRCounter=100;
-        if (ISRCounter<=0)   ISRCounter=0;
-        campo1[indice_menu] = ISRCounter;
-        }
-      if (foco==2) {
-        if (ISRCounter>=100) ISRCounter=100;
-        if (ISRCounter<=0)   ISRCounter=0;
-        campo2[indice_menu] = ISRCounter;
-        }
-      
-      //Serial.println(indice_menu);   
-      bool B = digitalRead(boton);
 
-
-if ( !B )
-    { //Serial.println("Boton pulsado: Contador a 0");
-     // counter = 0 ;
-      foco=(foco+1)%3;
-      if (foco==0) ISRCounter = indice_menu*4;
-      if (foco==1) ISRCounter = campo1[indice_menu];
-      if (foco==2) ISRCounter = campo2[indice_menu];
-      delay(200);
-    }
+  return enviar_mensaje;
 }
 
 
