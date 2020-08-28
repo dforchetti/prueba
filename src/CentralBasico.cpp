@@ -106,7 +106,7 @@ void loop(void) {
     mensaje_enviar.parametro2 = campo2[indice_menu]       ;   // intensidad
     envio_rf_multicast(&mensaje_enviar, 1) ;
  
-    //Serial.println("enviando multicast");
+    Serial.println("enviando multicast");
     
   };
 
