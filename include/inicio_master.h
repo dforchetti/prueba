@@ -152,23 +152,22 @@ unsigned int N_items  = 4 ,
         
 
                 
-int campo1[] = {1,2,3,4,5,6};
+int campo1[] = {1,2,3,4,5,6,7,8,9};
 
-int campo2[] = {10,20,30,40,50,60};
+int campo2[] = {10,20,30,40,50,60,70,80,90};
 
-
+/*
 String  MSG_menu[10]={ "TAD01 ",
                 "TAD02 ",
                 "TAD03 ",
                 "TAD04 ",
                 "TAD05 ",
                 "RAND  ",
-                "FFFF"};
+                "FFFF"};*/
+
+const char *MSG_menu2[10]={ "TAD01 ","TAD02 ","TAD03 ","TAD04 ","TAD05 ","RAND  ","FFFF"};
+
 char strBuf[30];
-
-
-
-
 
 void inicio(void)
 {
@@ -197,11 +196,11 @@ void inicio(void)
   
   // set SPI backup if required
   //u8g.setHardwareBackup(u8g_backup_avr_spi);
-  for (NOpciones=0 ; MSG_menu[NOpciones].indexOf("FFFF")==-1 ; NOpciones++);
+  for (NOpciones=0 ; strcmp(MSG_menu2[NOpciones],"FFFF") !=0 ; NOpciones++);
   
   //u8g.setRot180();
   
-  NOpciones =6;
+  //NOpciones =6;
 
   indice_menu=NOpciones-1;
   Serial.print("numero de opciones :");
@@ -256,11 +255,10 @@ void reloj(void) {
 
 void envio_rf(struct Mensaje *mensaje){
 
-  //RF24NetworkHeader header(mensaje->nodo);
   header.to_node = mensaje->nodo;
   header.type = mensaje->tipo;
   mensaje->contador++         ;
-/*
+ /*
   Serial.print(F("\n\renvio al Nodo ("));
   Serial.print(mensaje->nodo);
   Serial.print(F(") Modo("));
@@ -270,7 +268,9 @@ void envio_rf(struct Mensaje *mensaje){
   Serial.print(F(") P2("));
   Serial.print(mensaje->parametro2);
   Serial.println(F(")"));
-*/
+ */
+
+  
   print_mensaje(mensaje);
   
   header.type = mensaje->tipo;
@@ -298,6 +298,7 @@ void envio_rf(struct Mensaje *mensaje){
       numero_de_fallas = 0;
     }
   }
+  
 }
 
 
@@ -370,9 +371,10 @@ void doEncodeA(void)
       else
       {
          IsCW = false;
-         if (ISRCounter - 1 > 0) ISRCounter--;
+         if (ISRCounter > 0 ) ISRCounter--;
       }
       timeCounter = millis();
+
    }
 }
  
@@ -388,35 +390,52 @@ void doEncodeB(void)
       else
       {
          IsCW = false;
-         if (ISRCounter - 1 > 0) ISRCounter--;
+         if (ISRCounter > 0) ISRCounter--;
       }
       timeCounter = millis();
+
    }
 }
 
 void draw(void) {
   int i=0;
+  int primer_columna  = 2 ,
+      segunda_columna = 55,
+      tercer_columna  = 95;
 
   // graphic commands to redraw the complete screen should be placed here  
   u8g.setFont(u8g_font_unifont);
 
-  i=(indice_menu-1)%NOpciones;
+  NOpciones = 6;
   
-  if(i==-1) i=NOpciones-1;
-
-  sprintf(strBuf,"%s %02d%%  %02d%%",MSG_menu[i].c_str(),campo1[i],campo2[i]);
-  u8g.drawStr( 2,cont_menu + offset_menu            , strBuf);
+  if(indice_menu == 0 ) i = NOpciones-1;   //busca el ultimo de la lista
+  else i = indice_menu - 1;
+  //  sprintf(strBuf,"%s %02d%%  %02d%%",MSG_menu[i].c_str(),campo1[i],campo2[i]);
+  u8g.drawStr( primer_columna,cont_menu + offset_menu            ,MSG_menu2[i]);//strBuf); strBuf);
+  sprintf(strBuf,"%02d%%",campo1[i]);
+  u8g.drawStr( segunda_columna,cont_menu + offset_menu            ,strBuf);
+  sprintf(strBuf,"%02d%%",campo2[i]);
+  u8g.drawStr( tercer_columna,cont_menu + offset_menu            ,strBuf);
   
-  i=(indice_menu)%NOpciones;
-  if(i==-1) i=NOpciones-1;
-  sprintf(strBuf,"%s %02d%%  %02d%%",MSG_menu[i].c_str(),campo1[i],campo2[i]);
+  i = indice_menu;
+  //sprintf(strBuf,"%s %02d%%  %02d%%",MSG_menu[i].c_str(),campo1[i],campo2[i]);
   //strBuf="hola";
-  u8g.drawStr( 2,cont_menu + offset_menu + delta_menu    , strBuf);
+  u8g.drawStr( primer_columna,cont_menu + offset_menu + delta_menu    , MSG_menu2[i]);//strBuf);strBuf);
+  sprintf(strBuf,"%02d%%",campo1[i]);
+  u8g.drawStr( segunda_columna,cont_menu + offset_menu + delta_menu            ,strBuf);
+  sprintf(strBuf,"%02d%%",campo2[i]);
+  u8g.drawStr( tercer_columna,cont_menu + offset_menu + delta_menu            ,strBuf);
+
   
-  i=(indice_menu+1)%NOpciones;
-  if(i==-1) i=NOpciones-1;
-  sprintf(strBuf,"%s %02d%%  %02d%%",MSG_menu[i].c_str(),campo1[i],campo2[i]);
-  u8g.drawStr( 2,cont_menu + offset_menu + 2*delta_menu  , strBuf);
+  if(indice_menu == (NOpciones-1)) i = 0;   //busca el ultimo de la lista
+  else i = indice_menu + 1;
+  //sprintf(strBuf,"%s %02d%%  %02d%%",MSG_menu[i].c_str(),campo1[i],campo2[i]);
+  u8g.drawStr( primer_columna,cont_menu + offset_menu + 2*delta_menu  , MSG_menu2[i]);//strBuf);
+  sprintf(strBuf,"%02d%%",campo1[i]);
+  u8g.drawStr( segunda_columna,cont_menu + offset_menu + 2*delta_menu            ,strBuf);
+  sprintf(strBuf,"%02d%%",campo2[i]);
+  u8g.drawStr( tercer_columna,cont_menu + offset_menu + 2*delta_menu            ,strBuf);
+
 
   
   //u8g.drawRFrame(0,8,128,delta+2,2);  // toda la linea
@@ -436,10 +455,13 @@ bool actualizaLCD(void){
 
   if ( ISRCounter_anterior != ISRCounter ){
 
-    ISRCounter_anterior=ISRCounter;
+   ISRCounter_anterior=ISRCounter;
     enviar_mensaje=true;
 
-    if (foco==0) indice_menu = (ISRCounter/4)%(NOpciones);
+    if (foco==0) {
+
+      indice_menu = (ISRCounter/4)%(NOpciones);
+      }
 
     if (foco==1) {
       if (ISRCounter>=99)  ISRCounter=99;
@@ -454,7 +476,6 @@ bool actualizaLCD(void){
     }
   }
       
-  //Serial.println(indice_menu);   
   bool B = digitalRead(boton);
 
 
@@ -468,14 +489,18 @@ bool actualizaLCD(void){
     if (foco==2) ISRCounter = campo2[indice_menu];
     delay(200);
   }
-
+ 
   u8g.firstPage();  
 
   do {
+    noInterrupts();
     draw();
+    interrupts();
   } while( u8g.nextPage() );
 
+  delay(100);
   return enviar_mensaje;
+  
 }
 
 

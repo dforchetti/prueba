@@ -39,7 +39,7 @@ void loop(void) {
   
   if(network.available()) {     // Is there anything ready for us?
 
-    //decide_entrada_rf();
+   decide_entrada_rf();
    
   }
 
@@ -55,7 +55,7 @@ void loop(void) {
     Serial.print(F("\n\r Serial 1<<"));
     
     Serial.println(ENTRADA.c_str() );
-   // decide_entrada_serie_BT();
+    //decide_entrada_serie_BT();
   }
 
 
@@ -94,7 +94,12 @@ void loop(void) {
   Serial.print(F("."));
   if((cont++)%20==0) Serial.println("");
 
+//  actualizaLCD() ;
+
+
   if ( actualizaLCD() ){  // si ha cambiado algo en la entrada LCD + encode rotativo
+
+    Serial.println("envia mensaje");
     
     if(indice_menu == 0 ) mensaje_enviar.modo = M_TAD01;
     if(indice_menu == 1 ) mensaje_enviar.modo = M_TAD02;
@@ -102,16 +107,17 @@ void loop(void) {
     if(indice_menu == 3 ) mensaje_enviar.modo = M_TAD04;
     if(indice_menu == 4 ) mensaje_enviar.modo = M_TAD05;
     if(indice_menu == 5 ) mensaje_enviar.modo = M_RANDOM;
-    mensaje_enviar.parametro1 = campo1[indice_menu]       ;   // color
-    mensaje_enviar.parametro2 = campo2[indice_menu]       ;   // intensidad
+
+    mensaje_enviar.parametro1 = 1;// campo1[indice_menu]       ;   // color
+    mensaje_enviar.parametro2 = 2;//campo2[indice_menu]       ;   // intensidad
+
     envio_rf_multicast(&mensaje_enviar, 1) ;
  
     Serial.println("enviando multicast");
     
-  };
+  }
 
   delay(100);
-
 
 }
 // FIN LOOP principal
@@ -120,8 +126,8 @@ void loop(void) {
 void decide_entrada_rf (void) {
 
     network.read(header, &mensaje_recibido, sizeof(mensaje_recibido));
-
-      { // muestra el mensaje leido
+      {
+           // muestra el mensaje leido
         Serial.print("\n\rTipo(");
         Serial.print((char)header.type);
         Serial.print(") Numero(");
@@ -138,13 +144,12 @@ void decide_entrada_rf (void) {
         Serial.print(mensaje_recibido.parametro1);
         Serial.print(") P2 (");
         Serial.print(mensaje_recibido.parametro2);
-        //Serial.print(")\033[0m\n\r");
-        Serial.print(")\n\r");
+        Serial.println(")");
      }
 
     if(mensaje_recibido.tipo == T_CONEXION){
       Serial.print(F("\n\r<<Solicitud de conexión>> Nodo ["));//por ahora nada
-      Serial.print(header.from_node);
+      /////Serial.print(header.from_node);
       Serial.print(F("]"));
 
       mensaje_enviar.nodo = header.from_node;
@@ -163,6 +168,7 @@ void decide_entrada_rf (void) {
       t_ultimo_mensaje = millis();
 
     }      
+
 }
 
 void decide_entrada_serie_BT (void){
