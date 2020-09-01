@@ -107,11 +107,17 @@ void loop(void) {
     if(indice_menu == 3 ) mensaje_enviar.modo = M_TAD04;
     if(indice_menu == 4 ) mensaje_enviar.modo = M_TAD05;
     if(indice_menu == 5 ) mensaje_enviar.modo = M_RANDOM;
+<<<<<<< HEAD
 
     mensaje_enviar.parametro1 = 1;// campo1[indice_menu]       ;   // color
     mensaje_enviar.parametro2 = 2;//campo2[indice_menu]       ;   // intensidad
 
     envio_rf_multicast(&mensaje_enviar, 1) ;
+=======
+    mensaje_enviar.parametro1 = campo1[indice_menu]       ;   // color
+    mensaje_enviar.parametro2 = campo2[indice_menu]       ;   // intensidad
+    //envio_rf_multicast(&mensaje_enviar, 1) ;
+>>>>>>> 4e0ba6886fca2048f6cca7c55133ad65df1b8681
  
     Serial.println("enviando multicast");
     
